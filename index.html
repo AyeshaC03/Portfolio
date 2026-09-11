@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Ayesha C — Project Manager and Certified Scrum Master.">
+  <title>Ayesha C. — Project Manager & Certified Scrum Master</title>
+  <style>
+    :root {
+      --black: #111214;
+      --panel: #18191d;
+      --panel-2: #22242a;
+      --white: #f8f8f6;
+      --muted: #a1a3a8;
+      --line: rgba(255,255,255,.15);
+      --lime: #bdff54;
+      --yellow: #ffd768;
+      --max: 1180px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--black); color: var(--white); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.5; }
+    a { color: inherit; }
+    .wrap { width: min(calc(100% - 56px), var(--max)); margin: 0 auto; }
+    .site-header { position: absolute; inset: 0 0 auto; z-index: 3; }
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 28px 0; }
+    .brand { color: var(--white); font-size: 1.2rem; font-weight: 900; letter-spacing: -.07em; text-decoration: none; }
+    .brand span { color: var(--lime); }
+    .nav-links { display: flex; gap: 27px; }
+    .nav-links a { color: var(--muted); font-size: .7rem; font-weight: 800; letter-spacing: .14em; text-decoration: none; text-transform: uppercase; }
+    .nav-links a:hover, .nav-links a:focus-visible { color: var(--lime); }
+    .hero { min-height: 820px; position: relative; display: grid; align-items: center; overflow: hidden; background: radial-gradient(circle at 72% 20%, rgba(189,255,84,.13), transparent 24%), radial-gradient(circle at 10% 90%, rgba(255,215,104,.08), transparent 30%), var(--black); }
+    .hero::before { content: "AYESHA"; position: absolute; right: -90px; bottom: -40px; color: rgba(255,255,255,.025); font-size: clamp(9rem, 26vw, 24rem); font-weight: 950; letter-spacing: -.12em; line-height: .7; }
+    .hero-layout { position: relative; z-index: 1; display: grid; grid-template-columns: 1.25fr .75fr; gap: 70px; align-items: center; padding-top: 70px; }
+    .kicker { margin: 0 0 24px; color: var(--lime); font-size: .7rem; font-weight: 850; letter-spacing: .2em; text-transform: uppercase; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { max-width: 780px; margin-bottom: 28px; font-family: Arial, Helvetica, sans-serif; font-size: clamp(4.3rem, 10vw, 9.8rem); letter-spacing: -.055em; line-height: .82; }
+    .gradient-text { color: var(--lime); background: linear-gradient(100deg, var(--yellow), var(--lime)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero-role { margin-bottom: 22px; font-size: clamp(1.1rem, 2vw, 1.55rem); font-weight: 750; }
+    .hero-copy { max-width: 560px; color: var(--muted); font-size: 1rem; }
+    .hero-actions { display: flex; gap: 12px; margin-top: 32px; }
+    .button { display: inline-flex; align-items: center; justify-content: center; min-height: 47px; padding: 0 20px; border: 1px solid var(--lime); background: var(--lime); color: var(--black); font-size: .72rem; font-weight: 900; letter-spacing: .1em; text-decoration: none; text-transform: uppercase; }
+    .button:hover, .button:focus-visible { background: var(--white); border-color: var(--white); }
+    .button.ghost { border-color: var(--line); background: transparent; color: var(--white); }
+    .button.ghost:hover, .button.ghost:focus-visible { border-color: var(--lime); color: var(--lime); }
+    .identity { position: relative; width: min(100%, 350px); aspect-ratio: 1; justify-self: end; }
+    .identity::before { content: ""; position: absolute; inset: 8%; border: 1px solid var(--lime); border-radius: 50%; }
+    .identity::after { content: ""; position: absolute; inset: 19%; border: 1px solid rgba(255,255,255,.2); border-radius: 50%; }
+    .identity-core { position: absolute; inset: 27%; overflow: hidden; display: grid; place-items: center; border: 4px solid var(--black); border-radius: 50%; background: linear-gradient(145deg, #454b43, #171a18); color: var(--lime); font-size: clamp(3rem, 7vw, 5.5rem); font-weight: 950; letter-spacing: -.12em; }
+    .identity-core img { width: 100%; height: 100%; object-fit: cover; object-position: center 22%; filter: saturate(.9) contrast(1.04); }
+    .scroll-cue { position: absolute; right: 28px; bottom: 28px; color: var(--muted); font-size: .65rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; writing-mode: vertical-rl; }
+
+    section { padding: 125px 0; }
+    .section-top { display: flex; justify-content: space-between; gap: 30px; align-items: end; margin-bottom: 55px; }
+    .section-label { margin: 0 0 13px; color: var(--lime); font-size: .68rem; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }
+    h2 { max-width: 680px; margin-bottom: 0; font-family: Arial, Helvetica, sans-serif; font-size: clamp(2.8rem, 6vw, 6rem); letter-spacing: -.045em; line-height: .88; }
+    .section-intro { max-width: 390px; margin: 0; color: var(--muted); font-size: .92rem; }
+    .about { background: var(--panel); }
+    .about-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 70px; }
+    .about-copy { max-width: 680px; font-size: clamp(1.35rem, 2.5vw, 2.2rem); letter-spacing: -.045em; line-height: 1.15; }
+    .about-copy em { color: var(--lime); font-style: normal; }
+    .facts { border-top: 1px solid var(--line); }
+    .fact { display: flex; justify-content: space-between; gap: 25px; padding: 17px 0; border-bottom: 1px solid var(--line); }
+    .fact span:first-child { color: var(--muted); font-size: .65rem; font-weight: 850; letter-spacing: .12em; text-transform: uppercase; }.fact span:last-child { text-align: right; font-weight: 750; }
+
+    .services { background: var(--white); color: var(--black); }
+    .services .section-label { color: #368a67; }.services .section-intro { color: #5e6268; }
+    .service-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; background: var(--black); }
+    .service { min-height: 245px; padding: 28px; background: var(--white); transition: transform .2s ease, background .2s ease; }
+    .service:hover { position: relative; z-index: 1; background: var(--lime); transform: translateY(-5px); }
+    .service-number { color: #368a67; font-size: .68rem; font-weight: 900; letter-spacing: .16em; }    .service h3 { margin: 48px 0 12px; font-family: Arial, Helvetica, sans-serif; font-size: 1.35rem; letter-spacing: -.02em; }.service p { margin: 0; color: #5e6268; font-size: .86rem; }.service:hover p { color: var(--black); }
+
+    .proof { background: var(--black); }.proof-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }.proof-card { min-height: 260px; padding: 28px; border: 1px solid var(--line); background: var(--panel); }.proof-card:nth-child(1) { grid-column: span 7; }.proof-card:nth-child(2) { grid-column: span 5; }.proof-card:nth-child(3) { grid-column: span 5; }.proof-card:nth-child(4) { grid-column: span 7; }.proof-card h3 { margin: 0 0 12px; font-family: Arial, Helvetica, sans-serif; font-size: 1.35rem; letter-spacing: -.02em; }.proof-card p { color: var(--muted); font-size: .86rem; }.big-number { display: block; margin: 18px 0 8px; color: var(--lime); font-size: clamp(4rem, 8vw, 7.3rem); font-weight: 950; letter-spacing: -.06em; line-height: .8; }.bars { display: flex; align-items: end; gap: 8px; height: 75px; margin-top: 28px; border-bottom: 1px solid var(--line); }.bars i { flex: 1; background: var(--lime); }.bars i:nth-child(1) { height: 90%; }.bars i:nth-child(2) { height: 73%; }.bars i:nth-child(3) { height: 56%; }.bars i:nth-child(4) { height: 42%; }.bars i:nth-child(5) { height: 29%; }.bars i:nth-child(6) { height: 18%; }
+
+    .work { background: var(--panel); }.work-list { border-top: 1px solid var(--line); }.work-item { display: grid; grid-template-columns: 90px 1fr 1fr 80px; gap: 30px; align-items: center; padding: 28px 0; border-bottom: 1px solid var(--line); }.work-index { color: var(--lime); font-size: .7rem; font-weight: 900; letter-spacing: .12em; }.work-item h3 { margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 1.8rem; letter-spacing: -.02em; }.work-item p { margin: 0; color: var(--muted); font-size: .84rem; }.arrow { color: var(--lime); font-size: 1.7rem; text-align: right; }
+    .contact { background: linear-gradient(130deg, #c5ff61, #efffc9); color: var(--black); }.contact .section-label { color: #307d5e; }.contact-grid { display: grid; grid-template-columns: 1fr .8fr; gap: 80px; align-items: end; }.contact h2 { max-width: 770px; }.contact-copy { max-width: 350px; color: #31533f; font-size: .95rem; }.contact-links { margin-top: 25px; border-top: 1px solid rgba(17,18,20,.25); }.contact-links a { display: block; padding: 13px 0; border-bottom: 1px solid rgba(17,18,20,.25); font-weight: 800; text-decoration: none; }.contact-links a:hover { color: #307d5e; }
+    footer { padding: 24px 0; background: var(--black); color: var(--muted); font-size: .7rem; }.footer-inner { display: flex; justify-content: space-between; gap: 20px; }
+    @media (max-width: 780px) { .wrap { width: min(calc(100% - 34px), var(--max)); }.nav-links { gap: 12px; }.nav-links a { font-size: .58rem; }.hero { min-height: 850px; }.hero-layout, .about-grid, .contact-grid { grid-template-columns: 1fr; gap: 45px; }.identity { justify-self: start; width: 270px; }.section-top { display: block; }.section-intro { margin-top: 22px; }.service-grid { grid-template-columns: 1fr; }.proof-grid { grid-template-columns: 1fr; }.proof-card, .proof-card:nth-child(1), .proof-card:nth-child(2), .proof-card:nth-child(3), .proof-card:nth-child(4) { grid-column: auto; }.work-item { grid-template-columns: 48px 1fr 25px; gap: 14px; }.work-item p { grid-column: 2 / -1; }.arrow { grid-column: 3; grid-row: 1; }.footer-inner { display: block; }.footer-inner span { display: block; margin-top: 6px; } }
+    @media (max-width: 430px) { h1 { font-size: 4.2rem; }.hero-actions { display: grid; }.button.ghost { margin-left: 0; }.nav-links a:nth-child(2) { display: none; } }
+  </style>
+</head>
+<body>
+  <header class="site-header"><div class="wrap"><nav><a class="brand" href="#top">AC<span>.</span></a><div class="nav-links"><a href="#about">About</a><a href="#services">Expertise</a><a href="#work">Work</a><a href="#contact">Contact</a></div></nav></div></header>
+  <main id="top">
+    <section class="hero"><div class="wrap hero-layout"><div><p class="kicker">Project Manager · Certified Scrum Master</p><h1>Make work<br><span class="gradient-text">move forward.</span></h1><p class="hero-role">Ayesha C.</p><p class="hero-copy">9 years of turning complex delivery into clear priorities, aligned teams, and measurable outcomes across Schneider Electric, TCS, and MRM.</p><div class="hero-actions"><a class="button" href="#work">View selected work</a><a class="button ghost" href="#contact">Let's connect</a></div></div><div class="identity" aria-label="Portrait of Ayesha C."><div class="identity-core"><img src="ayesha-profile.jpg" alt="Portrait of Ayesha C."></div></div></div><span class="scroll-cue">Scroll to explore ↓</span></section>
+    <section class="about" id="about"><div class="wrap"><div class="section-top"><div><p class="section-label">01 / Profile</p><h2>Calm teams.<br>Clear outcomes.</h2></div><p class="section-intro">I bring structure to moving parts and help people do their best work together.</p></div><div class="about-grid"><p class="about-copy">I work at the intersection of <em>people, process, and progress</em> — facilitating better conversations, making delivery visible, and helping teams build the confidence to own their outcomes.</p><div class="facts"><div class="fact"><span>Focus</span><span>Agile, PMO & hybrid delivery</span></div><div class="fact"><span>Experience</span><span>Schneider Electric · TCS · MRM</span></div><div class="fact"><span>Certifications</span><span>CSM · SAFe 6 Scrum Master</span></div><div class="fact"><span>Recognition</span><span>Step-Up & New Bee Star awards</span></div></div></div></div></section>
+    <section class="services" id="services"><div class="wrap"><div class="section-top"><div><p class="section-label">02 / Expertise</p><h2>The way I<br>create momentum.</h2></div><p class="section-intro">Practical Agile leadership with the right amount of governance for the context.</p></div><div class="service-grid"><article class="service"><span class="service-number">01</span><h3>Scrum facilitation</h3><p>Focused ceremonies that create clarity, ownership, and momentum.</p></article><article class="service"><span class="service-number">02</span><h3>Backlog & flow</h3><p>Structured prioritisation, sprint planning, and work ready to move.</p></article><article class="service"><span class="service-number">03</span><h3>Project planning</h3><p>Scope, milestones, dependencies, RAID tracking, and delivery plans that teams can act on.</p></article><article class="service"><span class="service-number">04</span><h3>Stakeholder alignment</h3><p>Communication rhythms that keep decisions moving at the right level.</p></article><article class="service"><span class="service-number">05</span><h3>Risk & governance</h3><p>Early visibility of blockers, dependencies, compliance, and change.</p></article><article class="service"><span class="service-number">06</span><h3>JIRA, metrics & PMO</h3><p>Pragmatic workflows, KPI tracking, reporting, and PMBOK-informed delivery discipline.</p></article></div></div></section>
+    <section class="proof"><div class="wrap"><div class="section-top"><div><p class="section-label">03 / Proof of impact</p><h2>Good process<br>shows up in results.</h2></div><p class="section-intro">Selected evidence from delivery and governance work.</p></div><div class="proof-grid"><article class="proof-card"><span class="section-label">Backlog health</span><span class="big-number">50%+</span><p>Reduced a 100+ item backlog to 40–50 items through prioritisation, alignment, and process cleanup.</p><div class="bars" aria-label="Illustrative backlog reduction"><i></i><i></i><i></i><i></i><i></i><i></i></div></article><article class="proof-card"><span class="section-label">Security governance</span><span class="big-number">09</span><h3>Applications supported</h3><p>Supported JWT implementation governance across multiple HR systems to improve security, compliance, and delivery timelines.</p></article><article class="proof-card"><span class="section-label">Team enablement</span><span class="big-number">04</span><h3>Teams onboarded</h3><p>Designed tailored JIRA/Kanban boards and Scrum processes for Ping, HR-Doc, T&amp;A, and IAM.</p></article><article class="proof-card"><span class="section-label">Credentials & recognition</span><h3>Trusted to make delivery clearer.</h3><p>Certified Scrum Master and SAFe 6 Scrum Master, with Fundamentals in Product Management and multiple Step-Up and New Bee Star awards for governance and stakeholder collaboration.</p></article></div></div></section>
+    <section class="work" id="work"><div class="wrap"><div class="section-top"><div><p class="section-label">04 / Selected work</p><h2>Case studies<br>in progress.</h2></div><p class="section-intro">Evidence-led stories from product, delivery, and collaboration work.</p></div><div class="work-list"><article class="work-item"><span class="work-index">01 / 2024</span><h3>Shiftboard</h3><p>Team Collaboration Dashboard — a focused workspace for visible activity, priorities, and progress. <strong>STAR:</strong> shaped around clearer alignment and delivery conversations.</p><span class="arrow">↗</span></article><article class="work-item"><span class="work-index">02 / NOW</span><h3>Agile delivery governance</h3><p><strong>Situation:</strong> multiple HR systems needed clearer operations. <strong>Action:</strong> reduced backlog, onboarded teams, and supported JWT governance. <strong>Result:</strong> 50%+ reduction and recognition for collaboration.</p><span class="arrow">↗</span></article></div></div></section>
+    <section class="contact" id="contact"><div class="wrap contact-grid"><div><p class="section-label">05 / Contact</p><h2>Let's build<br>what's next.</h2></div><div><p class="contact-copy">Open to conversations about project management, Scrum Mastery, Agile transformation, and teams that want to deliver better.</p><div class="contact-links"><a href="mailto:ayeshhab@yahoo.com">ayeshhab@yahoo.com ↗</a><a href="https://www.linkedin.com/in/ayeshhab/" target="_blank" rel="noreferrer">LinkedIn profile ↗</a></div></div></div></section>
+  </main>
+  <footer><div class="wrap footer-inner"><span>© 2026 Ayesha C.</span><span>Project management with purpose.</span></div></footer>
+</body>
+</html>
