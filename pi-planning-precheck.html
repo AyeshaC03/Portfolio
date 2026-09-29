@@ -51,6 +51,9 @@
     h3 { margin-bottom: .3rem; font-size: 1.02rem; }
     .intro { max-width: 76ch; margin-bottom: 1.2rem; color: var(--muted); }
     .intro strong { color: var(--white); }
+    .context-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: .9rem 0 1.1rem; padding: .85rem 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .context-strip p { margin: 0; color: #d5d6d8; font-size: .8rem; }
+    .context-strip strong { display: block; margin-bottom: .18rem; color: var(--lime); font-size: .7rem; letter-spacing: .04em; text-transform: uppercase; }
     .sample-banner { display: flex; align-items: flex-start; gap: .7rem; margin: 1rem 0 1.25rem; padding: .8rem 1rem; border: 1px solid #687b48; background: #20271a; color: #e7f3d8; font-size: .88rem; }
     .sample-mark { flex: 0 0 auto; color: var(--lime); font-weight: 900; }
     .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: .55rem; margin: 1rem 0 1.5rem; }
@@ -128,6 +131,15 @@
     .priority { color: var(--lime); font-size: .72rem; font-weight: 900; }
     .case-study { padding: 1.1rem 0; border-top: 1px solid var(--line); }
     .case-study h2 { margin-bottom: .65rem; }
+    .closeout { margin-top: 2.1rem; padding: 1.1rem 0; border-top: 2px solid var(--lime); }
+    .closeout-intro { max-width: 78ch; color: var(--muted); font-size: .82rem; }
+    .action-table { overflow-x: auto; border-top: 1px solid var(--line); }
+    .action-table table { min-width: 820px; }
+    .action-table th, .action-table td { text-align: left; white-space: normal; vertical-align: top; }
+    .action-table td { font-size: .76rem; }
+    .action-owner { color: var(--white); font-weight: 700; }
+    .action-when { color: var(--amber); font-weight: 700; white-space: nowrap !important; }
+    .closing-note { margin: .9rem 0 0; color: var(--white); font-size: .86rem; font-weight: 700; }
     .case-grid { display: grid; grid-template-columns: repeat(5, 1fr); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
     .case-grid section { padding: .8rem .8rem .8rem 0; }
     .case-grid section + section { padding-left: .8rem; border-left: 1px solid var(--line); }
@@ -179,6 +191,7 @@
       .allocations { grid-column: 1 / -1; grid-row: 2; }
       .feature-actions { grid-column: 2; grid-row: 1; }
       .feature-actions button { min-height: 32px; }
+      .context-strip { grid-template-columns: 1fr; gap: .65rem; }
       .case-grid { grid-template-columns: 1fr; }
       .case-grid section, .case-grid section + section, .case-grid section:nth-child(even) { padding: .7rem 0; border-left: 0; border-bottom: 1px solid var(--line); }
       .case-grid section:last-child { border-bottom: 0; }
@@ -209,6 +222,11 @@
   <main class="shell">
     <h1>PI Planning Capacity &amp; Conflict Pre-Check</h1>
     <p class="intro">A deterministic SAFe-oriented aid for surfacing <strong>team capacity pressure and cross-team dependency gaps before Day 1</strong>. The sample plan below is fictional and illustrative; use findings to prepare conversations, not to make PI commitments.</p>
+    <div class="context-strip" aria-label="Tool context">
+      <p><strong>Who &amp; when</strong>Scrum Masters, RTEs, or pre-PI facilitators reviewing the plan before PI Planning Day 1.</p>
+      <p><strong>What to check</strong>Iteration-by-iteration demand against each team’s own capacity, plus linked provider commitments and need-by timing.</p>
+      <p><strong>How to use results</strong>Verify the evidence, agree owners and dates with teams, then bring resolved assumptions into PI Planning. This is a pre-check aid, not a commitment oracle.</p>
+    </div>
     <div class="sample-banner" role="note">
       <span class="sample-mark" aria-hidden="true">SAMPLE</span>
       <span><strong>Fictional / illustrative planning data.</strong> Three synthetic teams are loaded so the checks are visible immediately. Changes stay in this browser and device; they are not shared with other viewers.</span>
@@ -284,6 +302,13 @@
         </div>
         <p class="unit-note"><strong>Unit discipline:</strong> Capacity and planned demand use synthetic capacity-days. Compare them only within the same team. Do not add or compare story points, capacity-days, or other estimates across teams. All generated example data is fictional and illustrative.</p>
       </div>
+    </section>
+
+    <section class="closeout" aria-labelledby="closeoutTitle">
+      <h2 id="closeoutTitle">Inferences &amp; suggested action items</h2>
+      <p class="closeout-intro">These actions are inferred from the entered scenario. Owners are suggested roles, not assigned people; timelines are relative to PI Planning because no event date or individual roster is provided.</p>
+      <div class="action-table" id="actionItems"></div>
+      <p class="closing-note">Close the pre-check by verifying each signal with the named teams. Keep unresolved risks visible; final scope and PI commitment belong to the teams during PI Planning.</p>
     </section>
   </main>
   <footer><div class="shell">Pre-PI Planning aid · edits are local to this browser/device · no data leaves this page.</div></footer>
@@ -441,6 +466,8 @@
               severity: "high", title: `${team.name} is over capacity in ${iteration}`,
               evidence: `${formatDays(planned)} planned vs ${formatDays(capacity)} capacity-days (${Number.isFinite(percent) ? `${Math.round(percent)}%` : "capacity is 0"}). Items: ${itemLoad}.`,
               action: `Review ${iteration} allocations with ${team.name}; re-sequence, split, or defer work before Day 1.`,
+              owner: `${team.name} Scrum Master + Product Owner`,
+              when: "Before PI Planning Day 1",
               links: [{ label: `Open ${team.name}`, href: `#${team.id}` }]
             });
           } else if (capacity > 0 && percent >= 85) {
@@ -448,6 +475,8 @@
               severity: "medium", title: `${team.name} has tight capacity in ${iteration}`,
               evidence: `${formatDays(planned)} planned of ${formatDays(capacity)} capacity-days (${Math.round(percent)}% utilization; watch threshold is 85%). Items: ${itemLoad}.`,
               action: `Validate ${iteration} availability, risks, and contingency with ${team.name} before the event.`,
+              owner: `${team.name} Scrum Master + Product Owner`,
+              when: "Before PI Planning Day 1",
               links: [{ label: `Open ${team.name}`, href: `#${team.id}` }]
             });
           }
@@ -471,6 +500,8 @@
               severity: "high", title: `Unplanned provider work for ${consumer?.feature.id || "consumer item"}`,
               evidence: `${consumerTeam?.name || "Consumer"} needs ${providerTeam?.name || "provider"} by ${dependency.needBy}; no provider backlog item is linked for ${dependency.providerIteration} (0 linked capacity-days).`,
               action: `Confirm an owner and backlog item with ${providerTeam?.name || "the provider"}, then agree a feasible delivery iteration before Day 1.`,
+              owner: `${consumerTeam?.name || "Consumer"} Scrum Master + ${providerTeam?.name || "Provider"} Scrum Master`,
+              when: "Before PI Planning Day 1",
               links
             });
           } else {
@@ -480,6 +511,8 @@
                 severity: "high", title: `${provider.feature.id} is not planned in the stated provider iteration`,
                 evidence: `${provider.team.name} has 0 allocated days for ${provider.feature.id} in ${dependency.providerIteration}; consumer need-by is ${dependency.needBy}.`,
                 action: `Ask ${provider.team.name} to confirm the provider item and allocate it in an agreed iteration before Day 1.`,
+                owner: `${consumerTeam?.name || "Consumer"} Scrum Master + ${provider.team.name} Scrum Master`,
+                when: "Before PI Planning Day 1",
                 links
               });
             } else if (order.get(dependency.providerIteration) > order.get(dependency.needBy)) {
@@ -487,6 +520,8 @@
                 severity: "high", title: `${provider.feature.id} is planned after the consumer need-by`,
                 evidence: `${provider.team.name} allocates ${formatDays(providerDays)} to ${provider.feature.id} in ${dependency.providerIteration}; ${consumerTeam?.name || "Consumer"} / ${consumer?.feature.id || "consumer item"} needs it by ${dependency.needBy}.`,
                 action: `Reconcile the delivery sequence and need-by with both teams; move work only if the provider confirms capacity.`,
+                owner: `${consumerTeam?.name || "Consumer"} Scrum Master + ${provider.team.name} Scrum Master`,
+                when: "Agree timing before PI Planning Day 1",
                 links
               });
             }
@@ -495,6 +530,8 @@
                 severity: "high", title: `${provider.team.name} is over capacity for this dependency`,
                 evidence: `${provider.feature.id} has ${formatDays(providerDays)} planned in ${dependency.providerIteration} for ${consumerTeam?.name || "consumer"} / ${consumer?.feature.id || "consumer item"}; ${provider.team.name}'s load is ${formatDays(plannedDays(provider.team, dependency.providerIteration))} vs ${formatDays(provider.team.capacities[dependency.providerIteration])} capacity-days.`,
                 action: `Have ${provider.team.name} validate the dependency date and resolve its ${dependency.providerIteration} overcommitment before treating this delivery as available.`,
+                owner: `${provider.team.name} Scrum Master + Product Owner`,
+                when: "Resolve before PI Planning Day 1",
                 links
               });
             }
@@ -504,6 +541,8 @@
               severity: "medium", title: `Dependency is not confirmed`,
               evidence: `${consumerTeam?.name || "Consumer"} / ${consumer?.feature.id || "consumer item"} needs ${providerTeam?.name || "provider"}${provider ? ` / ${provider.feature.id} (${formatDays(provider.feature.allocations[dependency.providerIteration])} planned)` : " work (no item linked)"} by ${dependency.needBy}; provider expectation is ${dependency.providerIteration}, but agreement is unconfirmed.`,
               action: `Get an explicit owner, delivery iteration, and acceptance from both teams before Day 1.`,
+              owner: `${consumerTeam?.name || "Consumer"} Scrum Master + ${providerTeam?.name || "Provider"} Scrum Master`,
+              when: "Confirm before PI Planning Day 1",
               links
             });
           }
@@ -553,6 +592,7 @@
         const findings = allFindings();
         $("findingCount").textContent = `${findings.length} finding${findings.length === 1 ? "" : "s"} · ${findings.filter((item) => item.severity === "high").length} high`;
         const target = $("findings");
+        renderActionItems(findings);
         if (!findings.length) {
           target.innerHTML = `<div class="empty-state">No capacity or dependency flags in the current scenario. This is a check of entered data, not a PI commitment.</div>`;
           return;
@@ -564,6 +604,20 @@
             <p class="suggestion"><strong>Before Day 1:</strong> ${escapeHtml(finding.action)}</p>
             ${finding.links.length ? `<div class="finding-links">${finding.links.map((link) => `<a href="${escapeHtml(link.href)}">${escapeHtml(link.label)}</a>`).join("")}</div>` : ""}
           </article>`).join("");
+      }
+
+      function renderActionItems(findings) {
+        if (!findings.length) {
+          $("actionItems").innerHTML = `<p class="empty-state">No suggested actions from the current inputs. Recheck that team capacities, allocations, and dependency confirmations are current before PI Planning.</p>`;
+          return;
+        }
+        const rows = findings.map((finding) => `<tr>
+          <td><span class="severity ${finding.severity}">${escapeHtml(finding.severity)}</span><br>${escapeHtml(finding.title)}</td>
+          <td>${escapeHtml(finding.action)}</td>
+          <td class="action-owner">${escapeHtml(finding.owner)}</td>
+          <td class="action-when">${escapeHtml(finding.when)}</td>
+        </tr>`).join("");
+        $("actionItems").innerHTML = `<table><caption>Suggested owners and relative timing derived from flagged scenario data</caption><thead><tr><th scope="col">Inference</th><th scope="col">Suggested action</th><th scope="col">Suggested owner role(s)</th><th scope="col">Target timing</th></tr></thead><tbody>${rows}</tbody></table>`;
       }
 
       function renderLoadTable() {
