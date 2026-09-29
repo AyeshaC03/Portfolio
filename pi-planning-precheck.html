@@ -1,0 +1,877 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A SAFe-oriented, deterministic pre-PI Planning check for team-specific capacity and cross-team dependency readiness.">
+  <title>PI Planning Capacity &amp; Conflict Pre-Check — Ayesha C.</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --black: #111214;
+      --panel: #18191d;
+      --panel-raised: #202126;
+      --white: #f8f8f6;
+      --muted: #b0b2b7;
+      --line: #41434a;
+      --lime: #bdff54;
+      --red: #ff8178;
+      --amber: #ffd768;
+      --green: #9ce4a9;
+      --max: 1320px;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 1rem; }
+    body { margin: 0; background: var(--black); color: var(--white); line-height: 1.5; }
+    a { color: var(--lime); text-underline-offset: .2em; }
+    a:hover { color: #e0ffb1; }
+    a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible {
+      outline: 3px solid var(--lime); outline-offset: 3px;
+    }
+    button, input, select { font: inherit; }
+    button { min-height: 42px; padding: .55rem .85rem; border: 1px solid var(--line); border-radius: 3px; background: var(--panel-raised); color: var(--white); cursor: pointer; font-weight: 700; }
+    button:hover { border-color: var(--lime); color: var(--lime); }
+    button.primary { border-color: var(--lime); background: var(--lime); color: var(--black); }
+    button.primary:hover { border-color: #e0ffb1; background: #e0ffb1; }
+    button.danger { border-color: #75413e; color: #ffaaa3; }
+    button:disabled { cursor: not-allowed; opacity: .55; }
+    input, select { width: 100%; min-height: 42px; padding: .55rem .65rem; border: 1px solid #62646b; border-radius: 3px; background: #111214; color: var(--white); }
+    input[type="checkbox"] { width: 1.15rem; min-height: 1.15rem; accent-color: var(--lime); }
+    .shell { width: min(calc(100% - 40px), var(--max)); margin: 0 auto; }
+    .topbar { border-bottom: 1px solid var(--line); }
+    .topbar-inner { min-height: 58px; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .brand { color: var(--white); font-weight: 900; letter-spacing: -.06em; text-decoration: none; }
+    .brand span { color: var(--lime); }
+    .local-tag { color: var(--muted); font-size: .75rem; }
+    main { padding: 2rem 0 4rem; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { max-width: 900px; margin-bottom: .55rem; font-size: clamp(2rem, 4vw, 3.6rem); letter-spacing: -.055em; line-height: 1; }
+    h2 { margin-bottom: .25rem; font-size: 1.35rem; letter-spacing: -.025em; }
+    h3 { margin-bottom: .3rem; font-size: 1.02rem; }
+    .intro { max-width: 76ch; margin-bottom: 1.2rem; color: var(--muted); }
+    .intro strong { color: var(--white); }
+    .sample-banner { display: flex; align-items: flex-start; gap: .7rem; margin: 1rem 0 1.25rem; padding: .8rem 1rem; border: 1px solid #687b48; background: #20271a; color: #e7f3d8; font-size: .88rem; }
+    .sample-mark { flex: 0 0 auto; color: var(--lime); font-weight: 900; }
+    .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: .55rem; margin: 1rem 0 1.5rem; }
+    .toolbar .spacer { flex: 1; }
+    .status { min-height: 1.5rem; margin: .25rem 0 .75rem; color: var(--muted); font-size: .82rem; }
+    .status.error { color: #ffaaa3; }
+    .status.success { color: var(--green); }
+    .readiness { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, .85fr); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .readiness > section { min-width: 0; padding: 1.25rem 1.35rem 1.35rem 0; }
+    .readiness > section + section { padding-left: 1.35rem; border-left: 1px solid var(--line); }
+    .section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: .9rem; }
+    .section-heading p { margin: 0; color: var(--muted); font-size: .78rem; }
+    .finding-count { color: var(--lime) !important; font-weight: 800; white-space: nowrap; }
+    .findings { display: grid; gap: .55rem; }
+    .finding { padding: .75rem .8rem; border: 1px solid var(--line); background: var(--panel); }
+    .finding-head { display: flex; align-items: center; gap: .6rem; margin-bottom: .35rem; }
+    .severity { display: inline-block; padding: .12rem .38rem; border: 1px solid currentColor; font-size: .67rem; font-weight: 900; letter-spacing: .07em; text-transform: uppercase; }
+    .severity.high { color: var(--red); }
+    .severity.medium { color: var(--amber); }
+    .severity.low { color: var(--green); }
+    .finding h3 { margin: 0; font-size: .9rem; }
+    .finding p { margin: .25rem 0 0; color: #d5d6d8; font-size: .82rem; }
+    .finding .evidence { color: var(--muted); }
+    .finding .suggestion { margin-top: .45rem; color: var(--white); }
+    .finding-links { display: flex; flex-wrap: wrap; gap: .8rem; margin-top: .5rem; font-size: .77rem; font-weight: 700; }
+    .empty-state { padding: 1rem; border: 1px dashed var(--line); color: var(--muted); font-size: .88rem; }
+    .load-table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: .78rem; }
+    caption { padding: 0 0 .55rem; color: var(--muted); text-align: left; }
+    th, td { padding: .52rem .5rem; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+    th { color: var(--muted); font-size: .68rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+    th:first-child, td:first-child { text-align: left; }
+    tbody tr:last-child td { border-bottom: 0; }
+    .load-label { display: block; color: var(--muted); font-size: .67rem; }
+    td.over { color: var(--red); font-weight: 800; }
+    td.tight { color: var(--amber); font-weight: 800; }
+    .key { display: flex; flex-wrap: wrap; gap: .9rem; margin-top: .75rem; color: var(--muted); font-size: .72rem; }
+    .key strong { color: var(--white); }
+    .block { margin-top: 2.25rem; }
+    .block-head { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: .8rem; }
+    .block-head p { max-width: 72ch; margin: .25rem 0 0; color: var(--muted); font-size: .83rem; }
+    .iteration-strip { display: grid; grid-template-columns: repeat(5, 1fr); margin: .9rem 0 1.1rem; border: 1px solid var(--line); }
+    .iteration { padding: .6rem .7rem; border-right: 1px solid var(--line); text-align: center; }
+    .iteration:last-child { border: 0; }
+    .iteration strong { display: block; color: var(--lime); font-size: .8rem; }
+    .iteration span { color: var(--muted); font-size: .68rem; }
+    .dep-table { overflow-x: auto; border-top: 1px solid var(--line); }
+    .dep-table table { min-width: 720px; }
+    .dep-table td { text-align: left; white-space: normal; }
+    .dep-table th { text-align: left; }
+    .dep-status { display: inline-block; padding: .15rem .4rem; border: 1px solid var(--line); color: var(--muted); font-size: .68rem; font-weight: 800; }
+    .dep-status.gap { border-color: #794844; color: #ffaaa3; }
+    .dep-status.watch { border-color: #75633a; color: var(--amber); }
+    .dep-status.ready { border-color: #4e7455; color: var(--green); }
+    .team-list { border-top: 1px solid var(--line); }
+    .team { padding: 1rem 0 1.2rem; border-bottom: 1px solid var(--line); scroll-margin-top: 1rem; }
+    .team-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+    .team-title { display: flex; align-items: baseline; flex-wrap: wrap; gap: .65rem; }
+    .team-title h3 { margin: 0; font-size: 1.08rem; }
+    .team-total { color: var(--muted); font-size: .76rem; }
+    .team-actions, .feature-actions { display: flex; flex-wrap: wrap; gap: .4rem; }
+    .team-actions button, .feature-actions button { min-height: 34px; padding: .35rem .55rem; font-size: .73rem; }
+    .capacity-line { display: grid; grid-template-columns: 150px repeat(5, minmax(75px, 1fr)); margin-top: .7rem; overflow-x: auto; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .capacity-line > span { padding: .4rem .5rem; color: var(--muted); font-size: .72rem; text-align: right; }
+    .capacity-line > span:first-child { text-align: left; }
+    .capacity-line .iter-cap { color: var(--white); }
+    .feature-list { display: grid; gap: .4rem; margin: .65rem 0 0; padding: 0; list-style: none; }
+    .feature { display: grid; grid-template-columns: minmax(190px, 1.2fr) minmax(250px, 2fr) auto; gap: .7rem; align-items: center; padding: .55rem .65rem; background: var(--panel); }
+    .feature-name { min-width: 0; }
+    .feature-name a { font-weight: 800; text-decoration: none; }
+    .feature-name span { display: block; color: var(--muted); font-size: .7rem; }
+    .allocations { display: grid; grid-template-columns: repeat(5, 1fr); gap: .35rem; }
+    .alloc { color: var(--muted); font-size: .7rem; text-align: center; }
+    .alloc b { display: block; color: var(--white); font-size: .76rem; }
+    .priority { color: var(--lime); font-size: .72rem; font-weight: 900; }
+    .case-study { padding: 1.1rem 0; border-top: 1px solid var(--line); }
+    .case-study h2 { margin-bottom: .65rem; }
+    .case-grid { display: grid; grid-template-columns: repeat(5, 1fr); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .case-grid section { padding: .8rem .8rem .8rem 0; }
+    .case-grid section + section { padding-left: .8rem; border-left: 1px solid var(--line); }
+    .case-grid h3 { color: var(--lime); font-size: .78rem; }
+    .case-grid p { margin: 0; color: #d4d5d7; font-size: .76rem; }
+    .unit-note { margin: 1rem 0 0; padding: .8rem 1rem; border: 1px solid var(--line); color: var(--muted); font-size: .82rem; }
+    .unit-note strong { color: var(--white); }
+    footer { padding: 1rem 0; border-top: 1px solid var(--line); color: var(--muted); font-size: .73rem; }
+    dialog { width: min(680px, calc(100% - 28px)); max-height: min(88vh, 900px); padding: 0; overflow: auto; border: 1px solid #6b6d73; background: var(--panel); color: var(--white); }
+    dialog::backdrop { background: rgba(0, 0, 0, .76); }
+    .dialog-inner { padding: 1rem 1.2rem 1.2rem; }
+    .dialog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--line); }
+    .dialog-head p { max-width: 60ch; margin: 0 0 .8rem; color: var(--muted); font-size: .82rem; }
+    .dialog-head button { min-height: 34px; padding: .25rem .5rem; }
+    .fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; margin: 1rem 0; }
+    .field { display: grid; gap: .25rem; }
+    .field.full { grid-column: 1 / -1; }
+    .field label, .field-label { color: var(--muted); font-size: .75rem; font-weight: 700; }
+    .field small { color: var(--muted); font-size: .68rem; }
+    .checkbox-field { display: flex; align-items: center; gap: .55rem; min-height: 42px; }
+    .dialog-error { min-height: 1.3rem; color: #ffaaa3; font-size: .8rem; }
+    .dialog-actions { display: flex; justify-content: flex-end; gap: .5rem; border-top: 1px solid var(--line); padding-top: .8rem; }
+    #importFile { display: none; }
+    @media (max-width: 980px) {
+      .readiness { grid-template-columns: 1fr; }
+      .readiness > section { padding: 1.1rem 0; }
+      .readiness > section + section { padding: 1.1rem 0; border-top: 1px solid var(--line); border-left: 0; }
+      .case-grid { grid-template-columns: repeat(2, 1fr); }
+      .case-grid section, .case-grid section + section { padding: .75rem 0; border-left: 0; }
+      .case-grid section:nth-child(even) { padding-left: .8rem; border-left: 1px solid var(--line); }
+    }
+    @media (max-width: 650px) {
+      .shell { width: min(calc(100% - 28px), var(--max)); }
+      main { padding-top: 1.35rem; }
+      .topbar-inner { min-height: 52px; }
+      .local-tag { max-width: 12rem; text-align: right; }
+      .toolbar .spacer { flex-basis: 100%; }
+      .toolbar button { flex: 1 1 42%; }
+      .block-head { align-items: flex-start; flex-direction: column; }
+      .block-head > button { width: 100%; }
+      .iteration-strip { grid-template-columns: repeat(5, minmax(58px, 1fr)); }
+      .iteration { padding: .5rem .15rem; }
+      .capacity-line { grid-template-columns: 96px repeat(5, minmax(52px, 1fr)); }
+      .capacity-line > span { padding: .4rem .15rem; font-size: .65rem; }
+      .team-head { flex-direction: column; }
+      .team-actions { width: 100%; }
+      .team-actions button { flex: 1; }
+      .feature { grid-template-columns: 1fr auto; }
+      .allocations { grid-column: 1 / -1; grid-row: 2; }
+      .feature-actions { grid-column: 2; grid-row: 1; }
+      .feature-actions button { min-height: 32px; }
+      .case-grid { grid-template-columns: 1fr; }
+      .case-grid section, .case-grid section + section, .case-grid section:nth-child(even) { padding: .7rem 0; border-left: 0; border-bottom: 1px solid var(--line); }
+      .case-grid section:last-child { border-bottom: 0; }
+      .fields { grid-template-columns: 1fr; }
+      .field.full { grid-column: auto; }
+      .finding-links a { min-height: 32px; display: inline-flex; align-items: center; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <!--
+    THESIS: Resolve capacity and dependency friction before Day 1; refuse an AI oracle or PI dashboard that discovers issues only in the room.
+    OWN-WORLD: Near-black work surface, hard-edged charcoal rows, high-contrast Arial, and lime reserved for active facts and actions.
+    STORY: A facilitator sees real readiness evidence, inspects linked teams and backlog items, edits assumptions, and takes explicit pre-Day-1 actions.
+    FIRST VIEWPORT: Report findings and a five-iteration per-team load ledger sit side by side directly below the title; edit and export actions are immediately available.
+    FORM: Operate extension; dense pre-check console with native forms, linked dependency rows, and deterministic findings. User-specified mechanics; no concept tournament or seed.
+  -->
+  <header class="topbar">
+    <div class="shell topbar-inner">
+      <a class="brand" href="index.html" aria-label="Ayesha C. portfolio">AC<span>.</span> / WORKING ARTIFACT</a>
+      <span class="local-tag">Browser-local scenario · no sign-in · no shared data</span>
+    </div>
+  </header>
+  <main class="shell">
+    <h1>PI Planning Capacity &amp; Conflict Pre-Check</h1>
+    <p class="intro">A deterministic SAFe-oriented aid for surfacing <strong>team capacity pressure and cross-team dependency gaps before Day 1</strong>. The sample plan below is fictional and illustrative; use findings to prepare conversations, not to make PI commitments.</p>
+    <div class="sample-banner" role="note">
+      <span class="sample-mark" aria-hidden="true">SAMPLE</span>
+      <span><strong>Fictional / illustrative planning data.</strong> Three synthetic teams are loaded so the checks are visible immediately. Changes stay in this browser and device; they are not shared with other viewers.</span>
+    </div>
+    <div class="toolbar" aria-label="Scenario actions">
+      <button class="primary" id="runReport" type="button">Run deterministic pre-check</button>
+      <button id="addTeam" type="button">Add team</button>
+      <button id="addDependency" type="button">Add dependency</button>
+      <span class="spacer"></span>
+      <button id="exportJson" type="button">Export JSON</button>
+      <button id="importJson" type="button">Import JSON</button>
+      <input id="importFile" type="file" accept="application/json,.json" aria-label="Choose a PI planning scenario JSON file">
+      <button class="danger" id="resetSample" type="button">Reset to sample</button>
+    </div>
+    <p class="status" id="status" role="status" aria-live="polite"></p>
+
+    <div class="readiness">
+      <section aria-labelledby="findingsTitle">
+        <div class="section-heading">
+          <div><h2 id="findingsTitle">Pre-check findings</h2><p>Rule-based signals from the current scenario</p></div>
+          <p class="finding-count" id="findingCount"></p>
+        </div>
+        <div id="findings" class="findings"></div>
+      </section>
+      <section aria-labelledby="loadTitle">
+        <div class="section-heading">
+          <div><h2 id="loadTitle">Capacity by team</h2><p>Planned effort / available capacity · team-specific days</p></div>
+        </div>
+        <div class="load-table-wrap" id="loadTable"></div>
+        <div class="key" aria-label="Capacity thresholds">
+          <span><strong>At risk:</strong> 85% to under 100%</span>
+          <span><strong>Over:</strong> above 100%</span>
+        </div>
+      </section>
+    </div>
+
+    <section class="block" aria-labelledby="iterationsTitle">
+      <div class="block-head">
+        <div><h2 id="iterationsTitle">PI iteration window</h2><p>Capacity and allocations are shown in capacity-days and compared only inside each team. I1–I4 are followed by the IP iteration.</p></div>
+      </div>
+      <div class="iteration-strip" aria-label="Five planning iterations">
+        <div class="iteration"><strong>I1</strong><span>Iteration 1</span></div>
+        <div class="iteration"><strong>I2</strong><span>Iteration 2</span></div>
+        <div class="iteration"><strong>I3</strong><span>Iteration 3</span></div>
+        <div class="iteration"><strong>I4</strong><span>Iteration 4</span></div>
+        <div class="iteration"><strong>IP</strong><span>Innovation &amp; Planning</span></div>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="dependenciesTitle">
+      <div class="block-head">
+        <div><h2 id="dependenciesTitle">Dependency map</h2><p>Each link goes to the actual consumer or provider team/backlog record. “No provider item linked” is intentionally not drawn as a planned relationship.</p></div>
+      </div>
+      <div class="dep-table" id="dependencyTable"></div>
+    </section>
+
+    <section class="block" aria-labelledby="teamsTitle">
+      <div class="block-head">
+        <div><h2 id="teamsTitle">Teams &amp; prioritized backlog</h2><p>Edit capacities, ordered backlog, and per-iteration allocations. Capacity days are comparable only within the same team.</p></div>
+      </div>
+      <div id="teams" class="team-list"></div>
+    </section>
+
+    <section class="block" aria-labelledby="caseTitle">
+      <div class="case-study">
+        <h2 id="caseTitle">Case study / operating brief</h2>
+        <div class="case-grid">
+          <section><h3>Problem</h3><p>Capacity overload, unplanned provider work, and timing or confirmation gaps can surface during PI Planning and consume the room’s planning time.</p></section>
+          <section><h3>Intended outcome</h3><p>Move conflict discovery before Day 1 so facilitators can resolve assumptions and prepare the planning conversation. No measured savings or real-team result is claimed.</p></section>
+          <section><h3>Operating assumptions</h3><p>One facilitator maintains team capacity, prioritized items, iteration allocations, dependency need-by and provider iteration, and confirmation state.</p></section>
+          <section><h3>Decision heuristics</h3><p>Over 100% of a team’s iteration capacity is overcommitted. From 85% to under 100% is a tight-utilization watch. An unplanned, late, unconfirmed, or capacity-pressured dependency needs review.</p></section>
+          <section><h3>Limitations</h3><p>Manual inputs only; no Jira/ADO sync, calendars, forecasting, shared database, or AI. A finding is a prompt to verify, not a commitment decision or substitute for PI Planning.</p></section>
+        </div>
+        <p class="unit-note"><strong>Unit discipline:</strong> Capacity and planned demand use synthetic capacity-days. Compare them only within the same team. Do not add or compare story points, capacity-days, or other estimates across teams. All generated example data is fictional and illustrative.</p>
+      </div>
+    </section>
+  </main>
+  <footer><div class="shell">Pre-PI Planning aid · edits are local to this browser/device · no data leaves this page.</div></footer>
+
+  <dialog id="editor" aria-labelledby="dialogTitle">
+    <form id="editorForm" class="dialog-inner" novalidate>
+      <div class="dialog-head">
+        <div><h2 id="dialogTitle">Edit scenario</h2><p id="dialogDescription"></p></div>
+        <button type="button" id="closeDialog" aria-label="Close editor">Close</button>
+      </div>
+      <div class="fields" id="dialogFields"></div>
+      <p class="dialog-error" id="dialogError" role="alert"></p>
+      <div class="dialog-actions">
+        <button type="button" id="cancelDialog">Cancel</button>
+        <button class="primary" type="submit">Save changes</button>
+      </div>
+    </form>
+  </dialog>
+  <script>
+    (() => {
+      "use strict";
+      const ITERATIONS = ["I1", "I2", "I3", "I4", "IP"];
+      const STORAGE_KEY = "ayesha-pi-planning-precheck-v1";
+      const $ = (id) => document.getElementById(id);
+      const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      })[char]);
+      const makeId = (prefix) => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+      const blankIterations = (value = 0) => Object.fromEntries(ITERATIONS.map((iteration) => [iteration, value]));
+      const sampleScenario = () => ({
+        format: "pi-planning-precheck",
+        version: 1,
+        teams: [
+          {
+            id: "team-platform", name: "Platform", capacities: { I1: 24, I2: 24, I3: 22, I4: 22, IP: 12 },
+            features: [
+              { id: "PLAT-11", title: "Identity gateway hardening", priority: 1, allocations: { I1: 8, I2: 10, I3: 8, I4: 0, IP: 0 } },
+              { id: "PLAT-12", title: "Search API v2", priority: 2, allocations: { I1: 8, I2: 8, I3: 16, I4: 0, IP: 0 } },
+              { id: "PLAT-13", title: "Observability uplift", priority: 3, allocations: { I1: 5, I2: 4, I3: 0, I4: 5, IP: 0 } }
+            ]
+          },
+          {
+            id: "team-experience", name: "Customer Experience", capacities: { I1: 20, I2: 22, I3: 20, I4: 20, IP: 10 },
+            features: [
+              { id: "EXP-201", title: "Saved basket", priority: 1, allocations: { I1: 8, I2: 10, I3: 4, I4: 0, IP: 0 } },
+              { id: "EXP-202", title: "Checkout refresh", priority: 2, allocations: { I1: 8, I2: 15, I3: 8, I4: 0, IP: 0 } },
+              { id: "EXP-203", title: "Discovery facets", priority: 3, allocations: { I1: 0, I2: 6, I3: 5, I4: 6, IP: 0 } }
+            ]
+          },
+          {
+            id: "team-data", name: "Data Services", capacities: { I1: 18, I2: 18, I3: 18, I4: 18, IP: 10 },
+            features: [
+              { id: "DATA-301", title: "Event schema v3", priority: 1, allocations: { I1: 6, I2: 8, I3: 4, I4: 0, IP: 0 } },
+              { id: "DATA-302", title: "Analytics stream", priority: 2, allocations: { I1: 8, I2: 8, I3: 4, I4: 0, IP: 0 } },
+              { id: "DATA-303", title: "Telemetry resilience", priority: 3, allocations: { I1: 0, I2: 5, I3: 6, I4: 4, IP: 0 } }
+            ]
+          }
+        ],
+        dependencies: [
+          { id: "dep-search-ready", consumerTeamId: "team-experience", consumerFeatureId: "EXP-201", providerTeamId: "team-platform", providerFeatureId: "PLAT-11", needBy: "I2", providerIteration: "I2", confirmed: true },
+          { id: "dep-search-late", consumerTeamId: "team-experience", consumerFeatureId: "EXP-203", providerTeamId: "team-platform", providerFeatureId: "PLAT-12", needBy: "I2", providerIteration: "I3", confirmed: false },
+          { id: "dep-schema-missing", consumerTeamId: "team-experience", consumerFeatureId: "EXP-202", providerTeamId: "team-data", providerFeatureId: "", needBy: "I2", providerIteration: "I2", confirmed: false },
+          { id: "dep-schema-watch", consumerTeamId: "team-platform", consumerFeatureId: "PLAT-13", providerTeamId: "team-data", providerFeatureId: "DATA-301", needBy: "I2", providerIteration: "I2", confirmed: false }
+        ]
+      });
+
+      function validateScenario(value) {
+        const errors = [];
+        const validText = (text, max) => typeof text === "string" && text.trim().length > 0 && text.length <= max;
+        if (!value || typeof value !== "object" || Array.isArray(value)) return ["The JSON root must be an object."];
+        if (value.format !== "pi-planning-precheck" || value.version !== 1) errors.push("Expected format 'pi-planning-precheck' and version 1. Export a fresh file from this tool to see the supported structure.");
+        if (!Array.isArray(value.teams) || value.teams.length > 40) errors.push("Teams must be an array with no more than 40 entries.");
+        if (!Array.isArray(value.dependencies) || value.dependencies.length > 300) errors.push("Dependencies must be an array with no more than 300 entries.");
+        if (errors.length) return errors;
+        const teamIds = new Set();
+        const featureIds = new Map();
+        const dependencyIds = new Set();
+        value.teams.forEach((team, teamIndex) => {
+          const label = `Team ${teamIndex + 1}`;
+          if (!team || typeof team !== "object") { errors.push(`${label} must be an object.`); return; }
+          if (!/^[a-zA-Z0-9_-]{1,64}$/.test(team.id || "")) errors.push(`${label} needs a stable id containing only letters, numbers, hyphens, or underscores (max 64 characters).`);
+          else if (teamIds.has(team.id)) errors.push(`${label} duplicates team id '${team.id}'.`); else teamIds.add(team.id);
+          if (!validText(team.name, 80)) errors.push(`${label} needs a name of 1–80 characters.`);
+          if (!team.capacities || typeof team.capacities !== "object") errors.push(`${label} needs capacities for I1, I2, I3, I4, and IP.`);
+          else ITERATIONS.forEach((iteration) => {
+            const capacity = team.capacities[iteration];
+            if (!Number.isFinite(capacity) || capacity < 0 || capacity > 100000) errors.push(`${label} capacity ${iteration} must be a number from 0 to 100,000 days.`);
+          });
+          if (!Array.isArray(team.features) || team.features.length > 300) { errors.push(`${label} features must be an array with no more than 300 entries.`); return; }
+          team.features.forEach((feature, featureIndex) => {
+            const featureLabel = `${label}, backlog item ${featureIndex + 1}`;
+            if (!feature || typeof feature !== "object") { errors.push(`${featureLabel} must be an object.`); return; }
+            if (!/^[a-zA-Z0-9_-]{1,64}$/.test(feature.id || "")) errors.push(`${featureLabel} needs an ID containing only letters, numbers, hyphens, or underscores (max 64 characters).`);
+            else if (featureIds.has(feature.id)) errors.push(`${featureLabel} duplicates backlog ID '${feature.id}'.`); else featureIds.set(feature.id, team.id);
+            if (!validText(feature.title, 120)) errors.push(`${featureLabel} needs a title of 1–120 characters.`);
+            if (!Number.isInteger(feature.priority) || feature.priority < 1 || feature.priority > 999) errors.push(`${featureLabel} priority must be a whole number from 1 to 999.`);
+            if (!feature.allocations || typeof feature.allocations !== "object") errors.push(`${featureLabel} needs allocations for all five iterations.`);
+            else ITERATIONS.forEach((iteration) => {
+              const days = feature.allocations[iteration];
+              if (!Number.isFinite(days) || days < 0 || days > 100000) errors.push(`${featureLabel} allocation ${iteration} must be a number from 0 to 100,000 days.`);
+            });
+          });
+        });
+        const names = value.teams.filter((team) => team && typeof team.name === "string").map((team) => team.name.trim().toLowerCase());
+        if (new Set(names).size !== names.length) errors.push("Team names must be unique (case-insensitive).");
+        value.dependencies.forEach((dependency, index) => {
+          const label = `Dependency ${index + 1}`;
+          if (!dependency || typeof dependency !== "object") { errors.push(`${label} must be an object.`); return; }
+          if (!/^[a-zA-Z0-9_-]{1,64}$/.test(dependency.id || "")) errors.push(`${label} needs a stable id containing only letters, numbers, hyphens, or underscores.`);
+          else if (dependencyIds.has(dependency.id)) errors.push(`${label} duplicates dependency id '${dependency.id}'.`); else dependencyIds.add(dependency.id);
+          const consumer = value.teams.find((team) => team?.id === dependency.consumerTeamId);
+          const provider = value.teams.find((team) => team?.id === dependency.providerTeamId);
+          if (!consumer) errors.push(`${label} refers to a consumer team that does not exist.`);
+          if (!provider) errors.push(`${label} refers to a provider team that does not exist.`);
+          if (consumer && !consumer.features.some((feature) => feature.id === dependency.consumerFeatureId)) errors.push(`${label} must link to an existing consumer backlog item.`);
+          if (consumer && provider && consumer.id === provider.id) errors.push(`${label} must connect two different teams.`);
+          if (dependency.providerFeatureId && (!provider || !provider.features.some((feature) => feature.id === dependency.providerFeatureId))) errors.push(`${label} refers to a provider backlog item that does not exist. Use an empty provider item to explicitly record an unplanned ask.`);
+          if (!ITERATIONS.includes(dependency.needBy)) errors.push(`${label} need-by must be one of I1, I2, I3, I4, or IP.`);
+          if (!ITERATIONS.includes(dependency.providerIteration)) errors.push(`${label} provider iteration must be one of I1, I2, I3, I4, or IP.`);
+          if (typeof dependency.confirmed !== "boolean") errors.push(`${label} confirmation state must be true or false.`);
+        });
+        return errors;
+      }
+
+      function indexedFeatures() {
+        const map = new Map();
+        state.teams.forEach((team) => team.features.forEach((feature) => map.set(feature.id, { team, feature })));
+        return map;
+      }
+      function plannedDays(team, iteration) {
+        return team.features.reduce((total, feature) => total + feature.allocations[iteration], 0);
+      }
+      function utilization(team, iteration) {
+        const capacity = team.capacities[iteration];
+        return capacity === 0 ? (plannedDays(team, iteration) > 0 ? Infinity : 0) : plannedDays(team, iteration) / capacity * 100;
+      }
+      function teamLink(team, label = team.name) {
+        return `<a href="#${encodeURIComponent(team.id)}">${escapeHtml(label)}</a>`;
+      }
+      function featureLink(team, feature, label = `${feature.id} · ${feature.title}`) {
+        return `<a href="#${encodeURIComponent(feature.id)}">${escapeHtml(label)}</a>`;
+      }
+      function capacityFindings() {
+        const findings = [];
+        state.teams.forEach((team) => ITERATIONS.forEach((iteration) => {
+          const planned = plannedDays(team, iteration);
+          const capacity = team.capacities[iteration];
+          const percent = utilization(team, iteration);
+          const itemLoad = team.features.filter((feature) => feature.allocations[iteration] > 0)
+            .sort((a, b) => a.priority - b.priority)
+            .map((feature) => `${feature.id} ${feature.title} (${formatDays(feature.allocations[iteration])})`)
+            .join("; ") || "no items allocated";
+          if (planned > capacity) {
+            findings.push({
+              severity: "high", title: `${team.name} is over capacity in ${iteration}`,
+              evidence: `${formatDays(planned)} planned vs ${formatDays(capacity)} capacity-days (${Number.isFinite(percent) ? `${Math.round(percent)}%` : "capacity is 0"}). Items: ${itemLoad}.`,
+              action: `Review ${iteration} allocations with ${team.name}; re-sequence, split, or defer work before Day 1.`,
+              links: [{ label: `Open ${team.name}`, href: `#${team.id}` }]
+            });
+          } else if (capacity > 0 && percent >= 85) {
+            findings.push({
+              severity: "medium", title: `${team.name} has tight capacity in ${iteration}`,
+              evidence: `${formatDays(planned)} planned of ${formatDays(capacity)} capacity-days (${Math.round(percent)}% utilization; watch threshold is 85%). Items: ${itemLoad}.`,
+              action: `Validate ${iteration} availability, risks, and contingency with ${team.name} before the event.`,
+              links: [{ label: `Open ${team.name}`, href: `#${team.id}` }]
+            });
+          }
+        }));
+        return findings;
+      }
+      function dependencyFindings() {
+        const findings = [];
+        const featureMap = indexedFeatures();
+        const order = new Map(ITERATIONS.map((iteration, index) => [iteration, index]));
+        state.dependencies.forEach((dependency) => {
+          const consumerTeam = state.teams.find((team) => team.id === dependency.consumerTeamId);
+          const providerTeam = state.teams.find((team) => team.id === dependency.providerTeamId);
+          const consumer = featureMap.get(dependency.consumerFeatureId);
+          const provider = dependency.providerFeatureId ? featureMap.get(dependency.providerFeatureId) : null;
+          const links = [];
+          if (consumerTeam && consumer) links.push({ label: `Consumer: ${consumerTeam.name} · ${consumer.feature.id}`, href: `#${consumer.feature.id}` });
+          if (providerTeam) links.push({ label: provider ? `Provider: ${providerTeam.name} · ${provider.feature.id}` : `Provider team: ${providerTeam.name}`, href: provider ? `#${provider.feature.id}` : `#${providerTeam.id}` });
+          if (!provider) {
+            findings.push({
+              severity: "high", title: `Unplanned provider work for ${consumer?.feature.id || "consumer item"}`,
+              evidence: `${consumerTeam?.name || "Consumer"} needs ${providerTeam?.name || "provider"} by ${dependency.needBy}; no provider backlog item is linked for ${dependency.providerIteration} (0 linked capacity-days).`,
+              action: `Confirm an owner and backlog item with ${providerTeam?.name || "the provider"}, then agree a feasible delivery iteration before Day 1.`,
+              links
+            });
+          } else {
+            const providerDays = provider.feature.allocations[dependency.providerIteration];
+            if (providerDays <= 0) {
+              findings.push({
+                severity: "high", title: `${provider.feature.id} is not planned in the stated provider iteration`,
+                evidence: `${provider.team.name} has 0 allocated days for ${provider.feature.id} in ${dependency.providerIteration}; consumer need-by is ${dependency.needBy}.`,
+                action: `Ask ${provider.team.name} to confirm the provider item and allocate it in an agreed iteration before Day 1.`,
+                links
+              });
+            } else if (order.get(dependency.providerIteration) > order.get(dependency.needBy)) {
+              findings.push({
+                severity: "high", title: `${provider.feature.id} is planned after the consumer need-by`,
+                evidence: `${provider.team.name} allocates ${formatDays(providerDays)} to ${provider.feature.id} in ${dependency.providerIteration}; ${consumerTeam?.name || "Consumer"} / ${consumer?.feature.id || "consumer item"} needs it by ${dependency.needBy}.`,
+                action: `Reconcile the delivery sequence and need-by with both teams; move work only if the provider confirms capacity.`,
+                links
+              });
+            }
+            if (providerDays > 0 && plannedDays(provider.team, dependency.providerIteration) > provider.team.capacities[dependency.providerIteration]) {
+              findings.push({
+                severity: "high", title: `${provider.team.name} is over capacity for this dependency`,
+                evidence: `${provider.feature.id} has ${formatDays(providerDays)} planned in ${dependency.providerIteration} for ${consumerTeam?.name || "consumer"} / ${consumer?.feature.id || "consumer item"}; ${provider.team.name}'s load is ${formatDays(plannedDays(provider.team, dependency.providerIteration))} vs ${formatDays(provider.team.capacities[dependency.providerIteration])} capacity-days.`,
+                action: `Have ${provider.team.name} validate the dependency date and resolve its ${dependency.providerIteration} overcommitment before treating this delivery as available.`,
+                links
+              });
+            }
+          }
+          if (!dependency.confirmed) {
+            findings.push({
+              severity: "medium", title: `Dependency is not confirmed`,
+              evidence: `${consumerTeam?.name || "Consumer"} / ${consumer?.feature.id || "consumer item"} needs ${providerTeam?.name || "provider"}${provider ? ` / ${provider.feature.id} (${formatDays(provider.feature.allocations[dependency.providerIteration])} planned)` : " work (no item linked)"} by ${dependency.needBy}; provider expectation is ${dependency.providerIteration}, but agreement is unconfirmed.`,
+              action: `Get an explicit owner, delivery iteration, and acceptance from both teams before Day 1.`,
+              links
+            });
+          }
+        });
+        return findings;
+      }
+      function formatDays(days) { return `${Number.isInteger(days) ? days : Number(days.toFixed(1))}d`; }
+      function allFindings() { return [...capacityFindings(), ...dependencyFindings()]; }
+
+      let state;
+      let storageWarning = "";
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          const errors = validateScenario(parsed);
+          if (errors.length) {
+            state = sampleScenario();
+            storageWarning = `Saved browser scenario could not be loaded (${errors[0]}). Showing the fictional sample instead; export or import a valid JSON scenario to continue.`;
+          } else state = parsed;
+        } else state = sampleScenario();
+      } catch (error) {
+        state = sampleScenario();
+        storageWarning = `Browser storage could not be read (${error.message}). The sample is available for this page view; edits may not persist.`;
+      }
+
+      function setStatus(message, kind = "") {
+        const status = $("status");
+        status.textContent = message;
+        status.className = `status${kind ? ` ${kind}` : ""}`;
+      }
+      function saveScenario(next, successMessage = "Saved in this browser and device.") {
+        const errors = validateScenario(next);
+        if (errors.length) { setStatus(`Could not save: ${errors.slice(0, 3).join(" ")}`, "error"); return false; }
+        state = next;
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          setStatus(successMessage, "success");
+        } catch (error) {
+          setStatus(`Changes are active on this page but could not be saved to localStorage (${error.message}). Export JSON to keep a copy.`, "error");
+        }
+        render();
+        return true;
+      }
+
+      function renderReport() {
+        const findings = allFindings();
+        $("findingCount").textContent = `${findings.length} finding${findings.length === 1 ? "" : "s"} · ${findings.filter((item) => item.severity === "high").length} high`;
+        const target = $("findings");
+        if (!findings.length) {
+          target.innerHTML = `<div class="empty-state">No capacity or dependency flags in the current scenario. This is a check of entered data, not a PI commitment.</div>`;
+          return;
+        }
+        target.innerHTML = findings.map((finding) => `
+          <article class="finding">
+            <div class="finding-head"><span class="severity ${finding.severity}">${escapeHtml(finding.severity)}</span><h3>${escapeHtml(finding.title)}</h3></div>
+            <p class="evidence">${escapeHtml(finding.evidence)}</p>
+            <p class="suggestion"><strong>Before Day 1:</strong> ${escapeHtml(finding.action)}</p>
+            ${finding.links.length ? `<div class="finding-links">${finding.links.map((link) => `<a href="${escapeHtml(link.href)}">${escapeHtml(link.label)}</a>`).join("")}</div>` : ""}
+          </article>`).join("");
+      }
+
+      function renderLoadTable() {
+        const heads = ITERATIONS.map((iteration) => `<th scope="col">${iteration}</th>`).join("");
+        const rows = state.teams.map((team) => `<tr><th scope="row">${teamLink(team)}</th>${ITERATIONS.map((iteration) => {
+          const planned = plannedDays(team, iteration);
+          const capacity = team.capacities[iteration];
+          const percent = utilization(team, iteration);
+          const cls = planned > capacity ? "over" : capacity > 0 && percent >= 85 ? "tight" : "";
+          return `<td class="${cls}">${formatDays(planned)} / ${formatDays(capacity)}<span class="load-label">${Number.isFinite(percent) ? `${Math.round(percent)}% used` : "capacity 0"}</span></td>`;
+        }).join("")}</tr>`).join("");
+        $("loadTable").innerHTML = `<table><caption>Each cell: planned / available capacity-days, within that team only</caption><thead><tr><th scope="col">Team</th>${heads}</tr></thead><tbody>${rows}</tbody></table>`;
+      }
+
+      function dependencyState(dependency) {
+        const found = dependency.providerFeatureId ? indexedFeatures().get(dependency.providerFeatureId) : null;
+        if (!found || found.feature.allocations[dependency.providerIteration] <= 0) return { text: "Provider item unplanned", cls: "gap" };
+        const late = ITERATIONS.indexOf(dependency.providerIteration) > ITERATIONS.indexOf(dependency.needBy);
+        if (late) return { text: "Timing mismatch", cls: "gap" };
+        const over = plannedDays(found.team, dependency.providerIteration) > found.team.capacities[dependency.providerIteration];
+        if (over) return { text: "Provider over capacity", cls: "gap" };
+        if (!dependency.confirmed) return { text: "Unconfirmed", cls: "watch" };
+        return { text: "In good shape", cls: "ready" };
+      }
+      function renderDependencies() {
+        const features = indexedFeatures();
+        if (!state.dependencies.length) {
+          $("dependencyTable").innerHTML = `<p class="empty-state">No dependencies recorded. Add a dependency to link a consumer item to a provider team and backlog item.</p>`;
+          return;
+        }
+        const rows = state.dependencies.map((dependency) => {
+          const consumerTeam = state.teams.find((team) => team.id === dependency.consumerTeamId);
+          const providerTeam = state.teams.find((team) => team.id === dependency.providerTeamId);
+          const consumer = features.get(dependency.consumerFeatureId);
+          const provider = dependency.providerFeatureId ? features.get(dependency.providerFeatureId) : null;
+          const result = dependencyState(dependency);
+          return `<tr>
+            <td>${consumerTeam && consumer ? featureLink(consumerTeam, consumer.feature) : "Consumer record unavailable"}</td>
+            <td>${escapeHtml(dependency.needBy)}</td>
+            <td>${provider && providerTeam ? featureLink(providerTeam, provider.feature) : providerTeam ? `${teamLink(providerTeam)} · no provider item linked` : "Provider record unavailable"}</td>
+            <td>${escapeHtml(dependency.providerIteration)}</td>
+            <td><span class="dep-status ${result.cls}">${escapeHtml(result.text)}</span>${dependency.confirmed ? "" : ` <span class="dep-status watch">Not confirmed</span>`}</td>
+            <td><button type="button" data-edit-dependency="${escapeHtml(dependency.id)}" aria-label="Edit dependency for ${escapeHtml(consumer?.feature.id || "item")}">Edit</button> <button class="danger" type="button" data-delete-dependency="${escapeHtml(dependency.id)}" aria-label="Remove dependency for ${escapeHtml(consumer?.feature.id || "item")}">Remove</button></td>
+          </tr>`;
+        }).join("");
+        $("dependencyTable").innerHTML = `<table><caption>Provider iteration is an explicit delivery expectation, not inferred from a free-text note.</caption><thead><tr><th scope="col">Consumer item</th><th scope="col">Need by</th><th scope="col">Provider item / team</th><th scope="col">Provider iteration</th><th scope="col">Signal</th><th scope="col">Actions</th></tr></thead><tbody>${rows}</tbody></table>`;
+      }
+
+      function renderTeams() {
+        const container = $("teams");
+        if (!state.teams.length) {
+          container.innerHTML = `<p class="empty-state">No teams in this scenario. Add a team to start entering capacity and prioritized work.</p>`;
+          return;
+        }
+        container.innerHTML = state.teams.map((team) => {
+          const load = ITERATIONS.map((iteration) => `${formatDays(plannedDays(team, iteration))} / ${formatDays(team.capacities[iteration])}`).join(" · ");
+          const features = [...team.features].sort((a, b) => a.priority - b.priority || a.id.localeCompare(b.id)).map((feature) => `
+            <li class="feature" id="${escapeHtml(feature.id)}">
+              <div class="feature-name"><span class="priority">P${feature.priority} · ${escapeHtml(feature.id)}</span><a href="#${encodeURIComponent(feature.id)}">${escapeHtml(feature.title)}</a></div>
+              <div class="allocations" aria-label="Planned allocation by iteration">${ITERATIONS.map((iteration) => `<span class="alloc">${iteration}<b>${formatDays(feature.allocations[iteration])}</b></span>`).join("")}</div>
+              <div class="feature-actions"><button type="button" data-edit-feature="${escapeHtml(feature.id)}">Edit</button><button class="danger" type="button" data-delete-feature="${escapeHtml(feature.id)}" aria-label="Remove ${escapeHtml(feature.id)}">Remove</button></div>
+            </li>`).join("");
+          return `<article class="team" id="${escapeHtml(team.id)}">
+            <div class="team-head"><div class="team-title"><h3>${escapeHtml(team.name)}</h3><span class="team-total">Planned / capacity by iteration: ${escapeHtml(load)}</span></div>
+              <div class="team-actions"><button type="button" data-edit-team="${escapeHtml(team.id)}">Edit team &amp; capacity</button><button type="button" data-add-feature="${escapeHtml(team.id)}">Add backlog item</button><button class="danger" type="button" data-delete-team="${escapeHtml(team.id)}">Delete team</button></div>
+            </div>
+            <div class="capacity-line" aria-label="${escapeHtml(team.name)} capacity by iteration"><span>Available capacity</span>${ITERATIONS.map((iteration) => `<span class="iter-cap">${iteration} · ${formatDays(team.capacities[iteration])}</span>`).join("")}</div>
+            ${features ? `<ol class="feature-list" aria-label="${escapeHtml(team.name)} prioritized backlog">${features}</ol>` : `<p class="empty-state">No backlog items yet. Add an item to define planned demand.</p>`}
+          </article>`;
+        }).join("");
+      }
+      function render() {
+        renderReport();
+        renderLoadTable();
+        renderDependencies();
+        renderTeams();
+      }
+
+      const dialog = $("editor");
+      let onEditorSave = null;
+      function openEditor(title, description, fields, submit) {
+        $("dialogTitle").textContent = title;
+        $("dialogDescription").textContent = description;
+        $("dialogFields").innerHTML = fields;
+        $("dialogError").textContent = "";
+        onEditorSave = submit;
+        dialog.showModal();
+        const first = $("dialogFields").querySelector("input:not([type=checkbox]), select");
+        if (first) first.focus();
+      }
+      function textField(id, label, value, options = {}) {
+        const { type = "text", min = "", max = "", step = "", required = true, help = "" } = options;
+        const maxAttribute = max === "" ? "" : type === "number" ? `max="${max}"` : `maxlength="${max}"`;
+        return `<div class="field ${options.full ? "full" : ""}"><label for="${escapeHtml(id)}">${escapeHtml(label)}</label><input id="${escapeHtml(id)}" name="${escapeHtml(id)}" type="${type}" value="${escapeHtml(value)}" ${min !== "" ? `min="${min}"` : ""} ${maxAttribute} ${step ? `step="${step}"` : ""} ${required ? "required" : ""}>${help ? `<small>${escapeHtml(help)}</small>` : ""}</div>`;
+      }
+      function selectField(id, label, options, selected, includeEmpty = false) {
+        const choices = [...(includeEmpty ? [{ value: "", label: "No provider item linked — unplanned" }] : []), ...options];
+        return `<div class="field"><label for="${escapeHtml(id)}">${escapeHtml(label)}</label><select id="${escapeHtml(id)}" name="${escapeHtml(id)}" required>${choices.map((option) => `<option value="${escapeHtml(option.value)}" ${option.value === selected ? "selected" : ""}>${escapeHtml(option.label)}</option>`).join("")}</select></div>`;
+      }
+      function iterationFields(prefix, label, values) {
+        return ITERATIONS.map((iteration) => textField(`${prefix}-${iteration}`, `${iteration} ${label} (days)`, values[iteration], { type: "number", min: "0", max: "100000", step: "0.5" })).join("");
+      }
+      function readNumber(form, name) {
+        const value = form.elements.namedItem(name).value.trim();
+        if (!value) throw new Error(`${name} is required.`);
+        const number = Number(value);
+        if (!Number.isFinite(number) || number < 0 || number > 100000) throw new Error(`${name} must be a number from 0 to 100,000 days.`);
+        return number;
+      }
+      function uniqueTeamName(name, exceptId = "") {
+        return !state.teams.some((team) => team.id !== exceptId && team.name.trim().toLowerCase() === name.trim().toLowerCase());
+      }
+      function editTeam(team = null) {
+        const current = team || { id: makeId("team"), name: "", capacities: blankIterations(0), features: [] };
+        const fields = `<div class="field full">${textField("teamName", "Team name", current.name, { max: "80" })}</div>${iterationFields("capacity", "capacity", current.capacities)}`;
+        openEditor(team ? "Edit team & capacity" : "Add team", "Capacity is team-specific capacity-days. These values are never added to or compared with another team's units.", fields, (form) => {
+          const name = form.elements.teamName.value.trim();
+          if (!name || name.length > 80) throw new Error("Enter a team name between 1 and 80 characters.");
+          if (!uniqueTeamName(name, team?.id)) throw new Error("Another team already uses that name.");
+          const capacities = Object.fromEntries(ITERATIONS.map((iteration) => [iteration, readNumber(form, `capacity-${iteration}`)]));
+          const next = structuredClone(state);
+          if (team) Object.assign(next.teams.find((item) => item.id === team.id), { name, capacities });
+          else next.teams.push({ ...current, name, capacities });
+          return saveScenario(next, `${name} saved. Capacity remains team-specific.`);
+        });
+      }
+      function editFeature(team, feature = null) {
+        const current = feature || { id: makeId("ITEM").toUpperCase(), title: "", priority: team.features.length + 1, allocations: blankIterations(0) };
+        const fields = [
+          textField("featureId", "Backlog ID", current.id, { max: "64" }),
+          textField("featureTitle", "Backlog item title", current.title, { max: "120" }),
+          textField("featurePriority", "Priority (1 is highest)", current.priority, { type: "number", min: "1", max: "999", step: "1" }),
+          ...ITERATIONS.map((iteration) => textField(`allocation-${iteration}`, `${iteration} planned effort (days)`, current.allocations[iteration], { type: "number", min: "0", max: "100000", step: "0.5" }))
+        ].join("");
+        openEditor(feature ? `Edit ${feature.id}` : `Add backlog item · ${team.name}`, "Rank the backlog item and allocate its planned effort across the five PI iterations.", fields, (form) => {
+          const id = form.elements.featureId.value.trim();
+          const title = form.elements.featureTitle.value.trim();
+          const priority = Number(form.elements.featurePriority.value);
+          if (!/^[a-zA-Z0-9_-]{1,64}$/.test(id)) throw new Error("Backlog ID must use 1–64 letters, numbers, hyphens, or underscores.");
+          if (!title || title.length > 120) throw new Error("Enter an item title between 1 and 120 characters.");
+          if (state.teams.some((item) => item.features.some((other) => other.id === id && other.id !== feature?.id))) throw new Error(`Backlog ID '${id}' is already in use.`);
+          if (!Number.isInteger(priority) || priority < 1 || priority > 999) throw new Error("Priority must be a whole number from 1 to 999.");
+          const allocations = Object.fromEntries(ITERATIONS.map((iteration) => [iteration, readNumber(form, `allocation-${iteration}`)]));
+          const next = structuredClone(state);
+          const destination = next.teams.find((item) => item.id === team.id);
+          if (feature) {
+            const target = destination.features.find((item) => item.id === feature.id);
+            Object.assign(target, { id, title, priority, allocations });
+            if (id !== feature.id) next.dependencies.forEach((dependency) => {
+              if (dependency.consumerFeatureId === feature.id) dependency.consumerFeatureId = id;
+              if (dependency.providerFeatureId === feature.id) dependency.providerFeatureId = id;
+            });
+          } else destination.features.push({ id, title, priority, allocations });
+          return saveScenario(next, `${id} saved. Check the recalculated findings before treating the plan as ready.`);
+        });
+      }
+      function dependencyFields(dependency = null) {
+        const teamOptions = state.teams.map((team) => ({ value: team.id, label: team.name }));
+        const consumerTeamId = dependency?.consumerTeamId || state.teams[0]?.id || "";
+        const providerTeamId = dependency?.providerTeamId || state.teams.find((team) => team.id !== consumerTeamId)?.id || "";
+        const consumerOptions = (state.teams.find((team) => team.id === consumerTeamId)?.features || []).map((feature) => ({ value: feature.id, label: `${feature.id} · ${feature.title}` }));
+        const providerOptions = (state.teams.find((team) => team.id === providerTeamId)?.features || []).map((feature) => ({ value: feature.id, label: `${feature.id} · ${feature.title}` }));
+        if (!consumerOptions.length) throw new Error("Add a backlog item to the consumer team before creating a dependency.");
+        return `
+          ${selectField("consumerTeam", "Consumer team", teamOptions, consumerTeamId)}
+          ${selectField("consumerFeature", "Consumer backlog item", consumerOptions, dependency?.consumerFeatureId || consumerOptions[0].value)}
+          ${selectField("providerTeam", "Provider team", teamOptions.filter((item) => item.value !== consumerTeamId), providerTeamId)}
+          ${selectField("providerFeature", "Provider backlog item", providerOptions, dependency?.providerFeatureId || "", true)}
+          ${selectField("needBy", "Consumer need-by iteration", ITERATIONS.map((item) => ({ value: item, label: item })), dependency?.needBy || "I2")}
+          ${selectField("providerIteration", "Expected provider delivery iteration", ITERATIONS.map((item) => ({ value: item, label: item })), dependency?.providerIteration || "I2")}
+          <div class="field full checkbox-field"><input id="confirmed" name="confirmed" type="checkbox" ${dependency?.confirmed ? "checked" : ""}><label for="confirmed">Both teams have confirmed this dependency and delivery expectation</label></div>`;
+      }
+      function editDependency(dependency = null) {
+        if (state.teams.length < 2) { setStatus("Add at least two teams before recording a cross-team dependency.", "error"); return; }
+        let fields;
+        try { fields = dependencyFields(dependency); }
+        catch (error) { setStatus(error.message, "error"); return; }
+        openEditor(dependency ? "Edit dependency" : "Add cross-team dependency", "Select linked backlog items, then record need-by, provider delivery expectation, and confirmation state. Leave the provider item unlinked to record an unplanned ask.", fields, (form) => {
+          const consumerTeamId = form.elements.consumerTeam.value;
+          const providerTeamId = form.elements.providerTeam.value;
+          const consumerTeam = state.teams.find((team) => team.id === consumerTeamId);
+          const providerTeam = state.teams.find((team) => team.id === providerTeamId);
+          if (!consumerTeam || !providerTeam || consumerTeamId === providerTeamId) throw new Error("Choose two different existing teams.");
+          const consumerFeatureId = form.elements.consumerFeature.value;
+          const providerFeatureId = form.elements.providerFeature.value;
+          if (!consumerTeam.features.some((item) => item.id === consumerFeatureId)) throw new Error("Choose a consumer item belonging to the selected consumer team.");
+          if (providerFeatureId && !providerTeam.features.some((item) => item.id === providerFeatureId)) throw new Error("Choose a provider item belonging to the selected provider team, or explicitly leave it unlinked.");
+          const next = structuredClone(state);
+          const values = { consumerTeamId, consumerFeatureId, providerTeamId, providerFeatureId, needBy: form.elements.needBy.value, providerIteration: form.elements.providerIteration.value, confirmed: form.elements.confirmed.checked };
+          if (dependency) Object.assign(next.dependencies.find((item) => item.id === dependency.id), values);
+          else next.dependencies.push({ id: makeId("dep"), ...values });
+          return saveScenario(next, "Dependency saved and findings recalculated.");
+        });
+        $("consumerTeam").addEventListener("change", () => {
+          const currentConsumer = $("consumerTeam").value;
+          const currentProvider = $("providerTeam").value;
+          const consumer = state.teams.find((team) => team.id === currentConsumer);
+          const nextProvider = currentProvider !== currentConsumer ? currentProvider : state.teams.find((team) => team.id !== currentConsumer)?.id;
+          $("consumerFeature").innerHTML = (consumer?.features || []).map((feature) => `<option value="${escapeHtml(feature.id)}">${escapeHtml(feature.id)} · ${escapeHtml(feature.title)}</option>`).join("");
+          $("providerTeam").innerHTML = state.teams.filter((team) => team.id !== currentConsumer).map((team) => `<option value="${escapeHtml(team.id)}" ${team.id === nextProvider ? "selected" : ""}>${escapeHtml(team.name)}</option>`).join("");
+          refreshProviderFeatures("");
+        });
+        $("providerTeam").addEventListener("change", () => refreshProviderFeatures(""));
+        function refreshProviderFeatures(selectedId) {
+          const provider = state.teams.find((team) => team.id === $("providerTeam").value);
+          $("providerFeature").innerHTML = `<option value="">No provider item linked — unplanned</option>${(provider?.features || []).map((feature) => `<option value="${escapeHtml(feature.id)}" ${feature.id === selectedId ? "selected" : ""}>${escapeHtml(feature.id)} · ${escapeHtml(feature.title)}</option>`).join("")}`;
+        }
+      }
+
+      $("editorForm").addEventListener("submit", (event) => {
+        event.preventDefault();
+        try {
+          if (onEditorSave($("editorForm")) !== false) dialog.close();
+        } catch (error) {
+          $("dialogError").textContent = error.message;
+        }
+      });
+      $("closeDialog").addEventListener("click", () => dialog.close());
+      $("cancelDialog").addEventListener("click", () => dialog.close());
+      $("addTeam").addEventListener("click", () => editTeam());
+      $("addDependency").addEventListener("click", () => editDependency());
+      $("runReport").addEventListener("click", () => {
+        render();
+        setStatus("Pre-check recalculated from the current scenario using explicit capacity and dependency rules.", "success");
+      });
+      $("resetSample").addEventListener("click", () => {
+        if (window.confirm("Replace this browser's current scenario with the fictional sample data? Export your current data first if you want to keep it.")) saveScenario(sampleScenario(), "Fictional sample scenario restored in this browser.");
+      });
+      $("exportJson").addEventListener("click", () => {
+        const blob = new Blob([`${JSON.stringify(state, null, 2)}\n`], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "pi-planning-precheck-scenario.json";
+        document.body.append(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+        setStatus("Scenario exported as JSON. Keep the file somewhere private if it contains your team's planning inputs.", "success");
+      });
+      $("importJson").addEventListener("click", () => $("importFile").click());
+      $("importFile").addEventListener("change", async (event) => {
+        const file = event.target.files?.[0];
+        event.target.value = "";
+        if (!file) return;
+        if (file.size > 1024 * 1024) { setStatus("Import rejected: choose a JSON file no larger than 1 MB.", "error"); return; }
+        let imported;
+        try { imported = JSON.parse(await file.text()); }
+        catch (error) {
+          const location = error.message.match(/position (\d+)/i);
+          setStatus(`Import rejected: invalid JSON${location ? ` near character ${location[1]}` : ""}. Check the file syntax and try again. (${error.message})`, "error");
+          return;
+        }
+        const errors = validateScenario(imported);
+        if (errors.length) {
+          setStatus(`Import rejected: ${errors.slice(0, 4).join(" ")}${errors.length > 4 ? ` ${errors.length - 4} more issue(s).` : ""}`, "error");
+          return;
+        }
+        if (!window.confirm("Replace the current browser scenario with this imported data? Export the current scenario first if you want a copy.")) return;
+        saveScenario(imported, "Scenario imported and saved locally. All findings recalculated.");
+      });
+      document.addEventListener("click", (event) => {
+        const button = event.target.closest("button[data-edit-team],button[data-delete-team],button[data-add-feature],button[data-edit-feature],button[data-delete-feature],button[data-edit-dependency],button[data-delete-dependency]");
+        if (!button) return;
+        if (button.dataset.editTeam) editTeam(state.teams.find((team) => team.id === button.dataset.editTeam));
+        if (button.dataset.deleteTeam) {
+          const team = state.teams.find((item) => item.id === button.dataset.deleteTeam);
+          const affected = state.dependencies.filter((dependency) => dependency.consumerTeamId === team.id || dependency.providerTeamId === team.id).length;
+          if (window.confirm(`Delete ${team.name}, its ${team.features.length} backlog item(s), and ${affected} connected dependency record(s)?`)) {
+            const next = structuredClone(state);
+            next.teams = next.teams.filter((item) => item.id !== team.id);
+            next.dependencies = next.dependencies.filter((dependency) => dependency.consumerTeamId !== team.id && dependency.providerTeamId !== team.id);
+            saveScenario(next, `${team.name} and its linked records were removed.`);
+          }
+        }
+        if (button.dataset.addFeature) editFeature(state.teams.find((team) => team.id === button.dataset.addFeature));
+        if (button.dataset.editFeature) {
+          const found = indexedFeatures().get(button.dataset.editFeature);
+          if (found) editFeature(found.team, found.feature);
+        }
+        if (button.dataset.deleteFeature) {
+          const found = indexedFeatures().get(button.dataset.deleteFeature);
+          const linked = state.dependencies.filter((item) => item.consumerFeatureId === button.dataset.deleteFeature || item.providerFeatureId === button.dataset.deleteFeature).length;
+          if (found && window.confirm(`Remove ${found.feature.id} and ${linked} linked dependency record(s)?`)) {
+            const next = structuredClone(state);
+            next.teams.find((team) => team.id === found.team.id).features = next.teams.find((team) => team.id === found.team.id).features.filter((item) => item.id !== found.feature.id);
+            next.dependencies = next.dependencies.filter((item) => item.consumerFeatureId !== found.feature.id && item.providerFeatureId !== found.feature.id);
+            saveScenario(next, `${found.feature.id} and its linked dependency records were removed.`);
+          }
+        }
+        if (button.dataset.editDependency) editDependency(state.dependencies.find((item) => item.id === button.dataset.editDependency));
+        if (button.dataset.deleteDependency) {
+          const dependency = state.dependencies.find((item) => item.id === button.dataset.deleteDependency);
+          if (dependency && window.confirm("Remove this dependency record?")) {
+            const next = structuredClone(state);
+            next.dependencies = next.dependencies.filter((item) => item.id !== dependency.id);
+            saveScenario(next, "Dependency removed and findings recalculated.");
+          }
+        }
+      });
+
+      render();
+      if (storageWarning) setStatus(storageWarning, "error");
+      else {
+        try { if (!localStorage.getItem(STORAGE_KEY)) localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+        catch (error) { setStatus(`Sample scenario loaded, but localStorage is unavailable (${error.message}). Export JSON to keep edits.`, "error"); }
+      }
+    })();
+  </script>
+</body>
+</html>
