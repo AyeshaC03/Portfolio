@@ -28,7 +28,7 @@ The standalone tool is a static web page with no service, external API, or authe
 
 ## Brand Commitments
 
-The portfolio's existing identity is charcoal/near-black, high-contrast typography, and a single lime accent. The tool is an Operate surface and should keep the portfolio's established visual world.
+The portfolio's main identity remains charcoal/near-black, high-contrast typography, and a single lime accent. The PI Planning tool uses a product-specific powder-blue-and-white light theme, as requested, while retaining clear semantic colors and high-contrast controls.
 
 ## Evidence on Hand
 
